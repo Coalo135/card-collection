@@ -4,7 +4,7 @@ import 'collection.dart';
 import 'create_collection.dart';
 
 class ChooseCollection extends StatelessWidget {
-  final List<String> colecoes = ['Coleção 1', 'Coleção 2', 'Coleção 3'];
+  final List<String> colecoes = ['Coleção Teste'];
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +19,21 @@ class ChooseCollection extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
-
             SizedBox(height: 16),
 
-            Icon(Icons.collections_bookmark, size: 64, color: Color(0xFF7C3AED)),
+            Icon(
+              Icons.collections_bookmark,
+              size: 64,
+              color: Color(0xFF7C3AED),
+            ),
             SizedBox(height: 8),
             Text(
               'Suas Coleções',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
 
             SizedBox(height: 24),
@@ -40,13 +47,21 @@ class ChooseCollection extends StatelessWidget {
                     margin: EdgeInsets.only(bottom: 12),
                     child: ListTile(
                       leading: Icon(Icons.style, color: Color(0xFF7C3AED)),
-                      title: Text(colecoes[index], style: TextStyle(color: Colors.white)),
-                      trailing: Icon(Icons.arrow_forward_ios, color: Colors.white38, size: 16),
+                      title: Text(
+                        colecoes[index],
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      trailing: Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white38,
+                        size: 16,
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Collection(nome: colecoes[index]),
+                            builder: (context) =>
+                                Collection(nome: colecoes[index]),
                           ),
                         );
                       },
@@ -70,7 +85,6 @@ class ChooseCollection extends StatelessWidget {
             ),
 
             SizedBox(height: 16),
-
           ],
         ),
       ),

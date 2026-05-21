@@ -8,7 +8,7 @@ class Collection extends StatelessWidget {
 
   Collection({required this.nome});
 
-  final List<String> cartas = ['Carta 1', 'Carta 2', 'Carta 3'];
+  final List<String> cartas = ['Carta teste1', 'Carta teste 2'];
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,9 @@ class Collection extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => EditCollection(nome: nome)),
+                MaterialPageRoute(
+                  builder: (context) => EditCollection(nome: nome),
+                ),
               );
             },
           ),
@@ -35,13 +37,22 @@ class Collection extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
-
             SizedBox(height: 16),
 
             Icon(Icons.style, size: 64, color: Color(0xFF7C3AED)),
             SizedBox(height: 8),
-            Text(nome, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-            Text('${cartas.length} cartas', style: TextStyle(color: Colors.white54)),
+            Text(
+              nome,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              '${cartas.length} cartas',
+              style: TextStyle(color: Colors.white54),
+            ),
 
             SizedBox(height: 24),
 
@@ -52,9 +63,13 @@ class Collection extends StatelessWidget {
                   return Card(
                     color: Color(0xFF1A1A2E),
                     margin: EdgeInsets.only(bottom: 10),
+                    //TO DO: mostrar imagem da carta // Ver com vini como fazer
                     child: ListTile(
                       leading: Icon(Icons.style, color: Color(0xFF7C3AED)),
-                      title: Text(cartas[index], style: TextStyle(color: Colors.white)),
+                      title: Text(
+                        cartas[index],
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   );
                 },
@@ -68,14 +83,15 @@ class Collection extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AddCard(nomeColecao: nome)),
+                    MaterialPageRoute(
+                      builder: (context) => AddCard(nomeColecao: nome),
+                    ),
                   );
                 },
               ),
             ),
 
             SizedBox(height: 16),
-
           ],
         ),
       ),
