@@ -1,11 +1,13 @@
 import 'package:cardcollection/widgets/button.dart';
 import 'package:cardcollection/widgets/input.dart';
 import 'package:flutter/material.dart';
+import 'api_service.dart';
 
 class EditCollection extends StatefulWidget {
-  final String nome;
+  final String colecaoId;
+  final String nomeAtual;
 
-  EditCollection({required this.nome});
+  EditCollection({required this.colecaoId, required this.nomeAtual});
 
   @override
   _EditCollectionState createState() => _EditCollectionState();
@@ -13,13 +15,97 @@ class EditCollection extends StatefulWidget {
 
 class _EditCollectionState extends State<EditCollection> {
   late TextEditingController nomeController;
-  late TextEditingController descricaoController;
+
+  bool _carregando = false;
+  String _erro = '';
 
   @override
   void initState() {
     super.initState();
-    nomeController = TextEditingController(text: widget.nome);
-    descricaoController = TextEditingController();
+    nomeController = TextEditingController(text: widget.nomeAtual);
+  }
+
+  void _salvar() async {
+    setState(() {
+      _carregando = true;
+      _erro = '';
+    });
+
+    try {
+      final res = await ApiService.editarColecao(
+        widget.colecaoId,
+        nomeController.text,
+      );
+
+      if (res['message'] == 'Coleção atualizada com sucesso!') {
+        Navigator.pop(context, nomeController.text); // retorna o novo nome
+      } else {
+        setState(() {
+          _erro = res['message'] ?? 'Erro ao salvar';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _erro = 'Erro de conexão';
+      });
+    }
+
+    setState(() {
+      _carregando = false;
+    });
+  }
+
+  void _excluir() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Color(0xFF1A1A2E),
+        title: Text(
+          'Excluir?',
+          style: TextStyle(color: const Color.fromARGB(255, 255, 255, 255)),
+        ),
+        content: Text(
+          'Tem certeza? Isso não tem como desfazer.',
+          style: TextStyle(color: const Color.fromARGB(179, 255, 255, 255)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: const Color.fromARGB(137, 255, 255, 255)),
+            ),
+          ),
+          MyButton('Excluir', onPressed: () => Navigator.pop(context, true)),
+        ],
+      ),
+    );
+
+    if (confirmar != true) return;
+
+    setState(() {
+      _carregando = true;
+    });
+
+    try {
+      final res = await ApiService.deletarColecao(widget.colecaoId);
+
+      if (res['message'] == 'Coleção deletada com sucesso!') {
+        Navigator.pop(context, 'deletado');
+      } else {
+        setState(() {
+          _erro = res['message'] ?? 'Erro ao excluir';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _erro = 'Erro de conexão';
+      });
+    }
+
+    setState(() {
+      _carregando = false;
+    });
   }
 
   @override
@@ -28,8 +114,13 @@ class _EditCollectionState extends State<EditCollection> {
       backgroundColor: Color(0xFF0D0D1A),
       appBar: AppBar(
         backgroundColor: Color(0xFF0D0D1A),
-        title: Text('Editar Coleção', style: TextStyle(color: Colors.white)),
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          'Editar Coleção',
+          style: TextStyle(color: const Color.fromARGB(255, 255, 255, 255)),
+        ),
+        iconTheme: IconThemeData(
+          color: const Color.fromARGB(255, 255, 255, 255),
+        ),
         elevation: 0,
       ),
       body: Center(
@@ -38,14 +129,18 @@ class _EditCollectionState extends State<EditCollection> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.edit, size: 72, color: Color(0xFF7C3AED)),
+              Icon(
+                Icons.edit,
+                size: 72,
+                color: Color.fromARGB(255, 124, 58, 237),
+              ),
               SizedBox(height: 8),
               Text(
                 'Editar Coleção',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: const Color.fromARGB(255, 255, 255, 255),
                 ),
               ),
 
@@ -56,23 +151,30 @@ class _EditCollectionState extends State<EditCollection> {
                 'Nome da coleção',
                 controller: nomeController,
               ),
-              SizedBox(height: 16),
-              InputText(
-                'Descrição',
-                'Descrição',
-                controller: descricaoController,
-              ),
+
+              if (_erro.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Text(
+                    _erro,
+                    style: TextStyle(
+                      color: const Color.fromARGB(255, 255, 82, 82),
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
 
               SizedBox(height: 24),
 
               SizedBox(
                 width: double.infinity,
-                child: MyButton(
-                  'Salvar',
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
+                child: _carregando
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: Color.fromARGB(255, 182, 151, 13),
+                        ),
+                      )
+                    : MyButton('Salvar', onPressed: _salvar),
               ),
 
               SizedBox(height: 8),
@@ -80,13 +182,12 @@ class _EditCollectionState extends State<EditCollection> {
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
+                  onPressed: _carregando ? null : _excluir,
                   child: Text(
                     'Excluir coleção',
-                    style: TextStyle(color: Colors.redAccent),
+                    style: TextStyle(
+                      color: const Color.fromARGB(255, 255, 82, 82),
+                    ),
                   ),
                 ),
               ),

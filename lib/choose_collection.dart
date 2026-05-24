@@ -1,10 +1,34 @@
 import 'package:cardcollection/widgets/button.dart';
 import 'package:flutter/material.dart';
+import 'api_service.dart';
 import 'collection.dart';
 import 'create_collection.dart';
 
-class ChooseCollection extends StatelessWidget {
-  final List<String> colecoes = ['Coleção Teste'];
+class ChooseCollection extends StatefulWidget {
+  @override
+  _ChooseCollectionState createState() => _ChooseCollectionState();
+}
+
+class _ChooseCollectionState extends State<ChooseCollection> {
+  List<dynamic> colecoes = [];
+  bool _carregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarColecoes();
+  }
+
+  void _carregarColecoes() async {
+    setState(() {
+      _carregando = true;
+    });
+    final lista = await ApiService.getColecoes();
+    setState(() {
+      colecoes = lista;
+      _carregando = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +44,6 @@ class ChooseCollection extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: 16),
-
             Icon(
               Icons.collections_bookmark,
               size: 64,
@@ -35,51 +58,76 @@ class ChooseCollection extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-
             SizedBox(height: 24),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: colecoes.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    color: Color(0xFF1A1A2E),
-                    margin: EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: Icon(Icons.style, color: Color(0xFF7C3AED)),
-                      title: Text(
-                        colecoes[index],
-                        style: TextStyle(color: Colors.white),
+              child: _carregando
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: Color.fromARGB(255, 182, 151, 13),
                       ),
-                      trailing: Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.white38,
-                        size: 16,
+                    )
+                  : colecoes.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Nenhuma coleção ainda',
+                        style: TextStyle(color: Colors.white54),
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                Collection(nome: colecoes[index]),
+                    )
+                  : ListView.builder(
+                      itemCount: colecoes.length,
+                      itemBuilder: (context, index) {
+                        final colecao = colecoes[index];
+                        return Card(
+                          color: Color(0xFF1A1A2E),
+                          margin: EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.style,
+                              color: Color(0xFF7C3AED),
+                            ),
+                            title: Text(
+                              colecao['nameCollection'] ?? '',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              '${(colecao['cards'] as List).length} cartas',
+                              style: TextStyle(
+                                color: Colors.white38,
+                                fontSize: 12,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.white38,
+                              size: 16,
+                            ),
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      Collection(colecao: colecao),
+                                ),
+                              );
+                              _carregarColecoes();
+                            },
                           ),
                         );
                       },
                     ),
-                  );
-                },
-              ),
             ),
 
             SizedBox(
               width: double.infinity,
               child: MyButton(
                 'Nova Coleção',
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => CreateCollection()),
                   );
+                  _carregarColecoes();
                 },
               ),
             ),

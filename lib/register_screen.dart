@@ -1,6 +1,7 @@
 import 'package:cardcollection/widgets/button.dart';
 import 'package:cardcollection/widgets/input.dart';
 import 'package:flutter/material.dart';
+import 'api_service.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -14,8 +15,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController senhaController = TextEditingController();
   TextEditingController confirmarSenhaController = TextEditingController();
 
-  // TODO: adicionar validação Acho que fica no BACK
-  bool _senhasIguais = true;
+  bool _carregando = false;
+  String _erro = '';
+
+  void _cadastrar() async {
+    if (senhaController.text != confirmarSenhaController.text) {
+      setState(() {
+        _erro = 'As senhas não coincidem!';
+      });
+      return;
+    }
+
+    setState(() {
+      _carregando = true;
+      _erro = '';
+    });
+
+    try {
+      final resposta = await ApiService.cadastrar(
+        nomeController.text,
+        emailController.text,
+        senhaController.text,
+      );
+
+      if (resposta['token'] != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
+      } else {
+        setState(() {
+          _erro = resposta['message'] ?? 'Erro ao cadastrar';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _erro = 'Erro de conexão';
+      });
+    }
+
+    setState(() {
+      _carregando = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +106,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: confirmarSenhaController,
               ),
 
-              if (!_senhasIguais)
+              if (_erro.isNotEmpty)
                 Padding(
-                  padding: EdgeInsets.only(top: 8),
+                  padding: EdgeInsets.only(top: 10),
                   child: Text(
-                    'As senhas não coincidem!',
-                    style: TextStyle(color: Colors.redAccent, fontSize: 12),
+                    _erro,
+                    style: TextStyle(color: Colors.redAccent, fontSize: 13),
                   ),
                 ),
 
@@ -77,33 +119,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               SizedBox(
                 width: double.infinity,
-                child: MyButton(
-                  'Cadastrar',
-                  onPressed: () {
-                    if (senhaController.text != confirmarSenhaController.text) {
-                      setState(() {
-                        _senhasIguais = false;
-                      });
-                      return;
-                    }
-                    setState(() {
-                      _senhasIguais = true;
-                    });
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
-                    );
-                  },
-                ),
+                child: _carregando
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF7C3AED),
+                        ),
+                      )
+                    : MyButton('Cadastrar', onPressed: _cadastrar),
               ),
 
               SizedBox(height: 12),
 
               MyButton(
                 'Já tem conta? Faça login',
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
