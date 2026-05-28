@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 const String baseUrl = 'https://card-collection-psi.vercel.app';
 
+
 String tokenUsuario = '';
 
 class ApiService {

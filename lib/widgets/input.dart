@@ -18,7 +18,7 @@ class InputText extends StatelessWidget {
     return TextFormField(
       controller: controller,
       obscureText: esconder,
-      style: TextStyle(color: Colors.black, backgroundColor: Colors.white),
+      style: TextStyle(color: Color (0xFF7C3AED), backgroundColor: Colors.transparent),
       decoration: InputDecoration(
         labelText: rotulo,
         hintText: label,
